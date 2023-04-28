@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="project.mapper.DiaryMapper">
+
+	<!-- 1. 일기 목록 조회 -->
+	<select id="selectDiaryList" resultType="project.dto.DiaryDto">
+		select diary_id, mood_id, DATE_FORMAT(create_dt, '%Y-%m-%d') as create_dt
+			from t_diary
+		where DATE_FORMAT(create_dt, '%Y-%m') = DATE_FORMAT(now(), '%Y-%m')
+			and delete_yn = 'N'
+		order by create_dt desc
+	</select>
+
+	<!-- 1. 일기 목록 조회 (캘린더)-->
+	<select id="selectDiaryListDt" parameterType="String" resultType="project.dto.DiaryDto">
+		select diary_id, mood_id, DATE_FORMAT(create_dt, '%Y-%m-%d') as create_dt
+			from t_diary
+		where YEAR(create_dt) = YEAR(#{createDt})
+        	and MONTH(create_dt) = MONTH(#{createDt})
+        	and delete_yn='N'
+        order by create_dt desc
+	</select>
+	
+	<!-- 2. 일기 상세 조회 -->
+	<select id="selectDiaryDetail" parameterType="INTEGER" resultType="project.dto.DiaryDto">
+		select diary_id, diary_content, diary_img, create_dt, mood_id
+			from t_diary
+		where diary_id = #{diaryId}
+	</select>
+	
+	<!-- 3. 일기 수정 -->
+	<update id="updateDiary" parameterType="project.dto.DiaryDto">
+		update t_diary
+			set diary_content = #{diaryContent}
+		where diary_id = #{diaryId}
+	</update>
+	
+	<!-- 4. 일기 삭제 -->
+	<delete id="deleteDiary" parameterType="INTEGER">
+		update t_diary 
+			set delete_yn = "Y"
+		where diary_id = #{diaryId}
+	</delete>
+	
+	<!-- 5-0. 일기 작성 전 중복 체크 -->
+	<select id="writeDiary" resultType="project.dto.DiaryDto">
+	SELECT diary_id, DATE_FORMAT(create_dt, '%Y-%m-%d')
+	  FROM t_diary
+	 WHERE DATE_FORMAT(create_dt, '%Y-%m-%d') = DATE_FORMAT(now(), '%Y-%m-%d')
+	   AND delete_yn = 'N'
+	</select>
+	
+	<!-- 5. 일기 작성 -->
+	<insert id="insertDiary" parameterType="project.dto.DiaryDto">
+		insert into t_diary (diary_id, diary_content, diary_img, create_dt, mood_id)
+		values (#{diaryId}, #{diaryContent}, #{diaryImg}, now(), #{moodId})
+	</insert>
+	
+	<!-- 이름 조회 -->
+	<select id="selectName" resultType="String">
+		select name_title
+		  from t_name
+		 where name_id = 1
+	</select>
+	
+	<!-- 19. 이름 수정 -->
+	<update id="updateName" parameterType="project.dto.NameDto">
+		update t_name
+		   set name_title = #{nameTitle}
+	</update>
+</mapper>
+	
